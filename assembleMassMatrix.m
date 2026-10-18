@@ -1,0 +1,41 @@
+function M = assembleMassMatrix(nodes, origin_ref, Psi, DOF, m_i, weights, Z)
+n = 7;
+M_core = zeros(n, n);            
+a = Z(7);
+A_c = computeRotationMatrix(Z);
+phi   = Z(4);
+theta = Z(5);
+G = [1,         0,         -sin(theta); 
+    0,  cos(phi),  sin(phi)*cos(theta); 
+    0, -sin(phi),  cos(phi)*cos(theta)];
+numNodes = size(nodes, 2);
+w = m_i * weights(:)'; 
+[~, idx1] = ismember(1:numNodes, DOF);
+[~, idx2] = ismember((1:numNodes) + numNodes, DOF);
+[~, idx3] = ismember((1:numNodes) + 2*numNodes, DOF);
+Psi_mat = [Psi(idx1).'; Psi(idx2).'; Psi(idx3).']; 
+s_mat = (nodes - origin_ref(:)) * 1e-3; 
+U = s_mat + Psi_mat * a; 
+M_core(1:3, 1:3) = sum(w) * eye(3);
+u_w = U * w'; 
+u_w_tilde = [      0, -u_w(3),  u_w(2); 
+    u_w(3),       0, -u_w(1); 
+    -u_w(2),  u_w(1),       0 ];
+M_core(1:3, 4:6) = -A_c * u_w_tilde * G;    
+U_w = w .* U; 
+uuT_w = U * U_w'; 
+norm_u_sq_w = sum(sum(U.^2, 1) .* w);
+S = uuT_w - norm_u_sq_w * eye(3);
+M_core(4:6, 4:6) = -G.' * S * G; 
+Psi_w = Psi_mat * w'; 
+M_core(1:3, 7) = A_c * Psi_w; 
+cross_U_Psi = cross(U, Psi_mat, 1); 
+M_core(4:6, 7) = G.' * (cross_U_Psi * w'); 
+M_core(7, 7) = sum((sum(Psi_mat.^2, 1)) .* w);
+M_core(4:6, 1:3) = M_core(1:3, 4:6)'; 
+M_core(7, 1:3)   = M_core(1:3, 7)';   
+M_core(7, 4:6)   = M_core(4:6, 7)';  
+M = [eye(n), zeros(n);
+    zeros(n), M_core];
+end
+
