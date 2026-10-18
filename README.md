@@ -17,7 +17,6 @@ Based on a 1-second numerical simulation of an 80t flexible payload ($E=200$ GPa
 The simulations and benchmarks were executed using the following software and hardware environment:
 * **Software:** MathWorks MATLAB R2026a (version 26.1.0.3346908).
 * **Required Toolboxes:** Partial Differential Equation Toolbox and Simulink.
-* **Hardware Profile:** Apple M5 processor with 16 GB of unified memory.
 
 ## License (Enforced Open Source)
 This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. 
